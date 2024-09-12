@@ -1,48 +1,56 @@
 % Assignment 1
 
+%  Coordinate System on the side view
+%
+%     z
+%     ^
+%     |
+%     |
+%     |______> y
+%    /
+%   /
+%  L
+% x
 
-syms q p1 theta phi
-syms t L
-syms x1(t) y1(t) z1(t) x2(t) y2(t) z2(t) phi(t) theta(t)
-syms p1 
-syms p2
-syms g m_2
+% Not sure if we need all here but we can get rid of the unneeded once
+% later
+syms t phi(t) theta(t)
+syms p1(t) [3 1]
+syms q(t)
+syms L
+syms p2(t) [3 1]
+syms g m_2 m_1
 
-syms M(q) u
-syms b(q, q_dot, u)
-
-p1 = [x1; y1; z1];
-p1_dot = diff(p1, t);
 
 q = [p1; theta; phi];
-
-
-% theta_dot = diff(theta, t);
-% phi_dot = diff(phi, t);
-% x1_dot = diff(x1, t);
-% y1_dot = diff(y1,t);
-% z1_dot = diff(z1, t);
-% 
-% x2_dot = diff(x2, t);
-% y2_dot = diff(y2, t);
-% z2_dot = diff(z2, t);
-
 q_dot = diff(q, t);
 
-p2 = p1 + [sin(phi)*cos(theta)*L; cos(phi)*L; sin(phi)*sin(theta)*L];
 
-% q_dot = diff(q,t);
-% jacob = jacobian(p2, q);
-% p2_dot = jacob * q_dot
+% T = T1 + T2
+% V = V1 + V2
+p1_dot = diff(p1,t);
+T1 = 0.5 * m_1 * transpose(p1_dot) * p1_dot;
 
-p2_dot = jacobian(p2, t)
+% T2 = 0.5 * m_1 * transpose(p2_dot) * p2_dot;
+p2 = p1 + [sin(phi)*sin(theta)*L; sin(phi)*cos(theta)*L; cos(phi)*L];
 
-T2 = 0.5 * m_2 * transpose(p2_dot) * p2_dot
-V2 = m_2 * g * [0 0 1] * p2
+% p2_dot = jacobian(p2, t) or better to read:
+p2_dot = jacobian(p2, q) * q_dot;
 
-v = q_dot;
-v_dot = diff(v,t);
+T2 = 0.5 * m_1 * transpose(p2_dot) * p2_dot;
 
-equation = M * v_dot == b;
+T = T1 + T2;
 
-S = solve(equation, M)
+V1 = [0 0 1] * m_1 * g * p1;
+V2 = [0 0 1] * m_2 * g * p2;
+V = V1 + V2;
+
+% Whole Lagrange
+L = T - V;
+
+L_gradient_q_dot = gradient(T, q_dot) - gradient(V, q_dot);
+L_gradient_q = gradient(T, q) - gradient(V, q);
+L_gradient_q_dot_DOT = diff(L_gradient_q_dot, t);
+
+simplify(L_gradient_q_dot_DOT)
+
