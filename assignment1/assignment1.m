@@ -92,18 +92,26 @@ disp(W)
 V1 = [0 0 1] * m_1 * g * p1;
 V2 = [0 0 1] * m_2 * g * p2;
 V = V1 + V2;
+disp("V = ")
+disp(V)
 
 % Whole Lagrange
 L = T - V;
 
-% size 1 3  size 1 3             size 1 3
-dL_dq_dot = jacobian(T, q_dot) - jacobian(V, q_dot);
-dL_dq = jacobian(T, q) - jacobian(V, q);
+L_grad_q_dot = gradient(T, q_dot);
+disp("L gradient q_dot = ")
+disp(size(L_grad_q_dot))
+disp(L_grad_q_dot)
+L_grad_q_dot_diff_t = diff(L_grad_q_dot,t);
+disp("L gradient q_dot derivative t = ")
+disp(size(L_grad_q_dot_diff_t))
+disp(L_grad_q_dot_diff_t)
 
-% size 1 1
-ddL_dq_dot_dt = dL_dq_dot * q_dot_dot;
-% EL_left = collect(ddL_dq_dot_dt - dL_dq, q)
-Q = [u 0 0];
-% eq Q == simplify(ddL_dq_dot_dt - dL_dq) 
+L_grad_q = gradient(L,q)
+disp("L gradient q = ")
+disp(L_grad_q)
 
 
+EL = L_grad_q_dot_diff_t - L_grad_q;
+disp("EL = ")
+disp(EL)
