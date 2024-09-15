@@ -107,3 +107,71 @@ disp(b)
 disp("HESSIAN T = ")
 W = hessian(T, q_dot(t));
 disp(W)
+
+%% Part 1.b)
+clear
+
+% Definition of the variables
+syms t Length m_1 m_2 g lambda
+syms p1(t) [3 1]
+syms p2(t) [3 1]
+syms q(t) q_dot(t) q_dot_dot(t)
+syms p1_dot(t) [3 1]
+syms p1_dot_dot(t) [3 1]
+syms p2_dot(t) [3 1]
+syms p2_dot_dot(t) [3 1]
+
+% Generalized coordinates and derivative
+q(t) = [p1; p2];
+q_dot(t) = [p1_dot(t); p2_dot(t)];
+q_dot_dot(t) = [p1_dot_dot(t); p2_dot_dot(t)];
+
+% Kinetic energies
+T1 = 0.5 * m_1 * transpose(p1_dot(t)) * p1_dot(t); % Helicopter
+T2 = 0.5 * m_2 * transpose(p2_dot(t)) * p2_dot(t); % Hanging mass
+T = T1 + T2;
+
+% Potential energies 
+V1 = m_1 * g * [0 0 1] * p1(t); % Helicopter
+V2 = m_2 * g * [0 0 1] * p2(t); % Hanging mass
+V = V1 + V2;
+
+% Lagrangian (L = T - V)
+L = T - V;
+
+% Constraint equations 
+e = p1(t) - p2(t);
+C = 0.5 * (e.'* e - Length^2);
+
+% Lagrange equations
+L_grad_q_dot = gradient(L, q_dot(t)); % Gradient with respect to velocities
+L_grad_q = gradient(L, q(t)); % Gradient with respect to coordinates
+L_grad_q_dot_diff_t = diff(L_grad_q_dot, t); % Time derivative of the gradient
+
+% replace diffs with variables for better readibility when printing out the
+% matrices
+L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p11(t)), p1_dot1(t));
+L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p12(t)), p1_dot2(t));
+L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p13(t)), p1_dot3(t));
+
+L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p1_dot1(t)), p1_dot_dot1(t));
+L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p1_dot2(t)), p1_dot_dot2(t));
+L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p1_dot3(t)), p1_dot_dot3(t));
+
+L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p21(t)), p2_dot1(t));
+L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p22(t)), p2_dot2(t));
+L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p23(t)), p2_dot3(t));
+
+L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p2_dot1(t)), p2_dot_dot1(t));
+L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p2_dot2(t)), p2_dot_dot2(t));
+L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p2_dot3(t)), p2_dot_dot3(t));
+
+% Gradient of the constraints
+C_grad_q = gradient(C, q(t));
+
+
+
+% not sure about these ones 
+lagrange_eq = simplify(L_grad_q_dot_diff_t - L_grad_q - lambda * C_grad_q);
+
+lambda_sol = solve(C_grad_q' * lambda == 0, lambda);
