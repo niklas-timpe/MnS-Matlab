@@ -25,7 +25,7 @@ syms theta_dot_dot(t)
 syms q(t)
 syms q_dot(t)
 syms q_dot_dot(t)
-syms L
+syms Length
 syms p2(t) [3 1]
 syms g m_2 m_1
 syms u [3 1]
@@ -47,9 +47,9 @@ q_dot_dot(t) = [p1_dot_dot(t); theta_dot_dot(t); phi_dot_dot(t)];
 %                   dc/dphi , db/dtheta]
 %
 % p2_dot = jacobian(p2, t) or better to read:
-p2(t) = p1(t) + [sin(phi(t))*sin(theta(t))*L; 
-           sin(phi(t))*cos(theta(t))*L; 
-           -cos(phi(t))*L];
+p2(t) = p1(t) + [sin(phi(t))*sin(theta(t))*Length; 
+           sin(phi(t))*cos(theta(t))*Length; 
+           -cos(phi(t))*Length];
 
 p2_dot(t) = jacobian(p2(t), q(t)) * q_dot(t);
 disp("p2_dot = ")
