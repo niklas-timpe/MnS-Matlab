@@ -1,5 +1,6 @@
 % Assignment 1
 clear;
+%% Part 1.a)
 %  Coordinate System on the side view
 %
 %     z
@@ -12,15 +13,9 @@ clear;
 %  L
 % x
 
-
-
-
-% Not sure if we need all here but we can get rid of the unneeded once
-% later
 syms t 
 syms p1(t) [3 1] 
 syms phi(t) theta(t)
-
 syms p1_dot(t) [3 1]
 syms p1_dot_dot(t) [3 1]
 syms phi_dot(t) 
@@ -35,24 +30,11 @@ syms p2(t) [3 1]
 syms g m_2 m_1
 syms u [3 1]
 
-
+% All q derivates with specific variables to avoid nested diffs in the
+% output
 q(t) = [p1(t); theta(t); phi(t)];
 q_dot(t) = [p1_dot(t); theta_dot(t); phi_dot(t)];
 q_dot_dot(t) = [p1_dot_dot(t); theta_dot_dot(t); phi_dot_dot(t)];
-
-% T = T1 + T2
-% V = V1 + V2
-%p1_dot = diff(p1,t);
-
-% size 1 1
-T1 = 0.5 * m_1 * transpose(p1_dot(t)) * p1_dot(t)
-
-
-% T2 = 0.5 * m_1 * transpose(p2_dot) * p2_dot;
-% size 3 1
-p2(t) = p1(t) + [sin(phi(t))*sin(theta(t))*L; 
-           sin(phi(t))*cos(theta(t))*L; 
-           -cos(phi(t))*L];
 
 % p2 = [ a;
 %        b;
@@ -65,49 +47,32 @@ p2(t) = p1(t) + [sin(phi(t))*sin(theta(t))*L;
 %                   dc/dphi , db/dtheta]
 %
 % p2_dot = jacobian(p2, t) or better to read:
+p2(t) = p1(t) + [sin(phi(t))*sin(theta(t))*L; 
+           sin(phi(t))*cos(theta(t))*L; 
+           -cos(phi(t))*L];
 
-% size 3 1
 p2_dot(t) = jacobian(p2(t), q(t)) * q_dot(t);
 disp("p2_dot = ")
 disp(p2_dot(t))
 
-% size 1 1
+% Kinteic Energy
+T1 = 0.5 * m_1 * transpose(p1_dot(t)) * p1_dot(t)
 T2 = 0.5 * m_2 * p2_dot(t).' * p2_dot(t);
-
-disp("T1 = ")
-disp(T1)
-disp("T1 hessian = ")
-disp(hessian(T1, q_dot(t)))
-disp("T2 = ")
-disp(T2)
-disp("T2 hessian = ")
-disp(hessian(T2, q_dot(t)))
-
 T = T1 + T2;
-disp("HESSIAN T = ")
-W = hessian(T, q_dot(t));
-disp(W)
 
-% size 1 1 
+% Potential Energy
 V1 = [0 0 1] * m_1 * g * p1(t);
 V2 = [0 0 1] * m_2 * g * p2(t);
 V = V1 + V2;
-disp("V = ")
-disp(V)
 
-% Whole Lagrange
+% Lagrange
 L = T - V;
 
 L_grad_q_dot = gradient(T, q_dot(t));
-disp("L gradient q_dot = ")
-disp(L_grad_q_dot)
+
 L_grad_q_dot_diff_t = diff(L_grad_q_dot,t);
-disp("L gradient q_dot derivative t = ")
-disp(L_grad_q_dot_diff_t)
-
-
-disp("L gradient q_dot derivative t - [SUBBED] = ")
-% replace difs with variables for cleaner code
+% replace diffs with variables for better readibility when printing out the
+% matrices
 L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(phi(t)), phi_dot(t));
 L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(theta(t)), theta_dot(t));
 L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(phi_dot(t)), phi_dot_dot(t));
@@ -122,10 +87,7 @@ L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p1_dot2(t)), p1_dot_dot2(t)
 L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p1_dot3(t)), p1_dot_dot3(t));
 disp(L_grad_q_dot_diff_t)
 
-
 L_grad_q = gradient(L,q(t));
-disp("L gradient q = ")
-disp(L_grad_q)
 
 EL = L_grad_q_dot_diff_t - L_grad_q;
 disp("EL = ")
@@ -135,3 +97,13 @@ eqn = L_grad_q_dot_diff_t - L_grad_q == [u;0;0];
 
 disp("SOLUTION")
 [M,b] = equationsToMatrix(eqn,q_dot_dot(t));
+disp("M Matrix = ")
+disp(M)
+disp("b Matrix = ")
+disp(b)
+
+% Double check the Hessian and compare it the calculated solved Weight
+% Matrix
+disp("HESSIAN T = ")
+W = hessian(T, q_dot(t));
+disp(W)
