@@ -47,7 +47,7 @@ q_dot_dot(t) = [p1_dot_dot(t); theta_dot_dot(t); phi_dot_dot(t)];
 %                   dc/dphi , db/dtheta]
 %
 % p2_dot = jacobian(p2, t) or better to read:
-p2(t) = p1(t) + [sin(phi(t))*sin(theta(t))*Length; 
+p2(t) = p1(t) + [-sin(phi(t))*sin(theta(t))*Length; 
            sin(phi(t))*cos(theta(t))*Length; 
            -cos(phi(t))*Length];
 
@@ -185,7 +185,7 @@ disp(b)
 disp("SOLUTION 2 a)")
 qz_vec = [q_dot_dot(t); z];
 
-C_grad_q = gradient(C, q(t))
+C_grad_q = gradient(C, q(t));
 W = hessian(T, q_dot(t));
 
 M = [W C_grad_q;
