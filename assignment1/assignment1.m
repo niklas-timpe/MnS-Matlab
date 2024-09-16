@@ -124,6 +124,7 @@ syms p1_dot_dot(t) [3 1]
 syms p2_dot(t) [3 1]
 syms p2_dot_dot(t) [3 1]
 syms u [3 1]
+syms C(q)
 
 % Generalized coordinates and derivative
 q(t) = [p1; p2];
@@ -191,8 +192,21 @@ disp(M)
 disp("b Matrix = ")
 disp(b)
 
-
-
-
-
 %% Part 2.a)
+
+% disp(eqn)
+disp("SOLUTION")
+new_vec = [q_dot_dot(t); z];
+[X,c] = equationsToMatrix(eqn, new_vec);
+disp("X Matrix = ")
+disp(X)
+disp("c Matrix = ")
+disp(c)
+
+
+W2 = hessian(T, q_dot(t));
+gradient_c_q = gradient(C, q(t))
+
+solutionM = [W2 gradient_c_q;
+            gradient_c_q.' 0];
+disp(solutionM)
