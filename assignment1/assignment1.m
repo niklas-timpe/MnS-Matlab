@@ -93,7 +93,10 @@ EL = L_grad_q_dot_diff_t - L_grad_q;
 disp("EL = ")
 disp(EL)
 
-eqn = L_grad_q_dot_diff_t - L_grad_q == [u;0;0];
+p1_gradient_q = jacobian(p1(t), q(t)).';
+disp("p1 gradient q = ")
+disp(p1_gradient_q)
+eqn = L_grad_q_dot_diff_t - L_grad_q == p1_gradient_q * u;
 
 disp("SOLUTION")
 [M,b] = equationsToMatrix(eqn,q_dot_dot(t));
@@ -175,3 +178,6 @@ C_grad_q = gradient(C, q(t));
 lagrange_eq = simplify(L_grad_q_dot_diff_t - L_grad_q - lambda * C_grad_q);
 
 lambda_sol = solve(C_grad_q' * lambda == 0, lambda);
+
+
+%% Part 2.a)
