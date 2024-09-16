@@ -204,3 +204,13 @@ b = [b1;b2];
 
 disp("2 a) b Vector = ")
 disp(b)
+
+disp("2 a) equation = ")
+eqn = M * qz_vec == b;
+disp(eqn)
+
+
+disp("SOLUTION 2 b)")
+disp("2 b) equation = ")
+eqn = qz_vec == inv(M) * b;
+disp(eqn)
