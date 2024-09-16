@@ -115,7 +115,7 @@ disp(W)
 clear
 
 % Definition of the variables
-syms t Length m_1 m_2 g lambda
+syms t Length m_1 m_2 g lambda z
 syms p1(t) [3 1]
 syms p2(t) [3 1]
 syms q(t) q_dot(t) q_dot_dot(t)
@@ -123,6 +123,7 @@ syms p1_dot(t) [3 1]
 syms p1_dot_dot(t) [3 1]
 syms p2_dot(t) [3 1]
 syms p2_dot_dot(t) [3 1]
+syms u [3 1]
 
 % Generalized coordinates and derivative
 q(t) = [p1; p2];
@@ -139,12 +140,12 @@ V1 = m_1 * g * [0 0 1] * p1(t); % Helicopter
 V2 = m_2 * g * [0 0 1] * p2(t); % Hanging mass
 V = V1 + V2;
 
-% Lagrangian (L = T - V)
-L = T - V;
-
 % Constraint equations 
 e = p1(t) - p2(t);
 C = 0.5 * (e.'* e - Length^2);
+
+% Lagrangian (L = T - V)
+L = T - V - (z*C);
 
 % Lagrange equations
 L_grad_q_dot = gradient(L, q_dot(t)); % Gradient with respect to velocities
@@ -175,9 +176,23 @@ C_grad_q = gradient(C, q(t));
 
 
 % not sure about these ones 
-lagrange_eq = simplify(L_grad_q_dot_diff_t - L_grad_q - lambda * C_grad_q);
+% lagrange_eq = simplify(L_grad_q_dot_diff_t - L_grad_q - lambda * C_grad_q);
+% lambda_sol = solve(C_grad_q' * lambda == 0, lambda);
 
-lambda_sol = solve(C_grad_q' * lambda == 0, lambda);
+p1_jac_q_trans = jacobian(p1(t), q(t)).';
+disp("p1_jac_q_trans = ")
+disp(p1_jac_q_trans)
+eqn = L_grad_q_dot_diff_t - L_grad_q == p1_jac_q_trans * u;
+
+disp("SOLUTION")
+[M,b] = equationsToMatrix(eqn,q_dot_dot(t));
+disp("M Matrix = ")
+disp(M)
+disp("b Matrix = ")
+disp(b)
+
+
+
 
 
 %% Part 2.a)
