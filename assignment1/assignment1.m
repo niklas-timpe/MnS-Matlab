@@ -193,3 +193,14 @@ M = [W C_grad_q;
 
 disp("2 a) M Matrix = ")
 disp(M)
+
+
+
+
+Q = p1_jac_q_trans * u;
+b1 = Q - jacobian(W*q_dot(t), q(t)) * q_dot(t) + gradient(T, q(t)) - gradient(V, q(t));
+b2 = -jacobian(jacobian(C, q(t))*q_dot(t),q(t))*q_dot(t);
+b = [b1;b2];
+
+disp("2 a) b Vector = ")
+disp(b)
