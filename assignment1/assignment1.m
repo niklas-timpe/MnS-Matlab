@@ -52,8 +52,6 @@ p2(t) = p1(t) + [sin(phi(t))*sin(theta(t))*Length;
            -cos(phi(t))*Length];
 
 p2_dot(t) = jacobian(p2(t), q(t)) * q_dot(t);
-disp("p2_dot = ")
-disp(p2_dot(t))
 
 % Kinteic Energy
 T1 = 0.5 * m_1 * transpose(p1_dot(t)) * p1_dot(t)
@@ -85,37 +83,37 @@ L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p13(t)), p1_dot3(t));
 L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p1_dot1(t)), p1_dot_dot1(t));
 L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p1_dot2(t)), p1_dot_dot2(t));
 L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p1_dot3(t)), p1_dot_dot3(t));
-disp(L_grad_q_dot_diff_t)
 
 L_grad_q = gradient(L,q(t));
 
 EL = L_grad_q_dot_diff_t - L_grad_q;
-disp("EL = ")
-disp(EL)
 
 p1_jac_q_trans = jacobian(p1(t), q(t)).';
-disp("p1_jac_q_trans = ")
-disp(p1_jac_q_trans)
 eqn = L_grad_q_dot_diff_t - L_grad_q == p1_jac_q_trans * u;
 
-disp("SOLUTION")
+disp("SOLUTION 1 a)")
 [M,b] = equationsToMatrix(eqn,q_dot_dot(t));
-disp("M Matrix = ")
+disp("1 a) M Matrix = ")
 disp(M)
-disp("b Matrix = ")
+disp("1 a) b Matrix = ")
 disp(b)
 
 % Double check the Hessian and compare it the calculated solved Weight
 % Matrix
-disp("HESSIAN T = ")
-W = hessian(T, q_dot(t));
-disp(W)
+% disp("HESSIAN T = ")
+% W = hessian(T, q_dot(t));
+% disp(W)
 
 %% Part 1.b)
-clear
 
+% Probably not all clears and redefinitions are needed here but the code
+% can be streamlined if needed later
+clear p1(t) p2(t)
+clear p1_dot(t) p2_dot(t)
+clear p1_dot_dot(t) p2_dot_dot(t)
+clear q(t) q_dot(t) q_dot_dot(t)
 % Definition of the variables
-syms t Length m_1 m_2 g lambda z
+syms z
 syms p1(t) [3 1]
 syms p2(t) [3 1]
 syms q(t) q_dot(t) q_dot_dot(t)
@@ -123,8 +121,7 @@ syms p1_dot(t) [3 1]
 syms p1_dot_dot(t) [3 1]
 syms p2_dot(t) [3 1]
 syms p2_dot_dot(t) [3 1]
-syms u [3 1]
-syms C(q)
+syms C
 
 % Generalized coordinates and derivative
 q(t) = [p1; p2];
@@ -171,42 +168,28 @@ L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p2_dot1(t)), p2_dot_dot1(t)
 L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p2_dot2(t)), p2_dot_dot2(t));
 L_grad_q_dot_diff_t = subs(L_grad_q_dot_diff_t, diff(p2_dot3(t)), p2_dot_dot3(t));
 
-% Gradient of the constraints
-C_grad_q = gradient(C, q(t));
-
-
-
-% not sure about these ones 
-% lagrange_eq = simplify(L_grad_q_dot_diff_t - L_grad_q - lambda * C_grad_q);
-% lambda_sol = solve(C_grad_q' * lambda == 0, lambda);
 
 p1_jac_q_trans = jacobian(p1(t), q(t)).';
-disp("p1_jac_q_trans = ")
-disp(p1_jac_q_trans)
 eqn = L_grad_q_dot_diff_t - L_grad_q == p1_jac_q_trans * u;
 
-disp("SOLUTION")
+disp("SOLUTION 1 b)")
 [M,b] = equationsToMatrix(eqn,q_dot_dot(t));
-disp("M Matrix = ")
+disp("1 b) M Matrix = ")
 disp(M)
-disp("b Matrix = ")
+disp("1 b) b Matrix = ")
 disp(b)
 
 %% Part 2.a)
 
 % disp(eqn)
-disp("SOLUTION")
-new_vec = [q_dot_dot(t); z];
-[X,c] = equationsToMatrix(eqn, new_vec);
-disp("X Matrix = ")
-disp(X)
-disp("c Matrix = ")
-disp(c)
+disp("SOLUTION 2 a)")
+qz_vec = [q_dot_dot(t); z];
 
+C_grad_q = gradient(C, q(t))
+W = hessian(T, q_dot(t));
 
-W2 = hessian(T, q_dot(t));
-gradient_c_q = gradient(C, q(t))
+M = [W C_grad_q;
+    C_grad_q.' 0];
 
-solutionM = [W2 gradient_c_q;
-            gradient_c_q.' 0];
-disp(solutionM)
+disp("2 a) M Matrix = ")
+disp(M)
