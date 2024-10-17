@@ -1,4 +1,127 @@
 %% 2 a
+clear all
+
+% Define symbolic variable
+syms x
+
+% Set the value of lambda
+lambda_value = -2;
+% Define the dynamics as an expression with lambda substituted
+f = lambda_value * x;
+% Generate a MATLAB function that only depends on x
+dynamics = matlabFunction(f, 'Vars', x);
+
+tf = [0 2];
+dt = 0.1;
+x0 = 1;
+
+
+% RK Explicit
+function [ts, X] = rkbutcher(tf, dt, f, init, A, B)
+    ts = tf(1):dt:tf(2);
+    N = length(ts);
+    s = length(B);        % Number of stages
+    n = length(init);     % Dimension of the system
+
+    X = zeros(n, N);
+    X(:,1) = init;
+
+    % Loop over simulation steps
+    for step = 1:N-1
+        xk = X(:, step);
+
+        K = zeros(n, s);
+
+        % Loop over stages
+        for i = 1:s
+            sum_aK = zeros(n,1);
+            % Loop over stages again but only to the point that is allowed
+            % for implicit euler
+            for a_explicit = 1:i-1
+                sum_aK = sum_aK + K(:,a_explicit) * A(i, a_explicit);
+            end
+
+            xi = xk + dt * sum_aK;
+            K(:,i) = f(xi);
+        end
+
+        % Update the solution
+        X(:, step+1) = xk + dt * K * B(:);
+    end
+end
+
+% Define Runge-Kutta Butcher tables
+Euler.A = [0];
+Euler.B = [1];
+Euler.C = [0];
+
+RK2.A = [ 0  0; 
+          1/2 0];
+RK2.B = [0 1];
+RK2.C = [0 1/2];
+
+RK4.A = [ 0   0  0 0;
+          1/2  0  0 0;
+          0   1/2 0 0;
+          0   0  1 0];
+RK4.B = [1/6 1/3 1/3 1/6];
+RK4.C = [0 1/2 1/2 0];
+
+% Run simulations using rkbutcher
+[ts_euler, X_euler] = rkbutcher(tf, dt, dynamics, x0, Euler.A, Euler.B);
+[ts_rk2, X_rk2] = rkbutcher(tf, dt, dynamics, x0, RK2.A, RK2.B);
+[ts_rk4, X_rk4] = rkbutcher(tf, dt, dynamics, x0, RK4.A, RK4.B);
+
+% Plot results
+figure;
+plot(ts_euler, X_euler, '-o', 'DisplayName', 'Euler', 'LineWidth', 1.5);
+hold on;
+plot(ts_rk2, X_rk2, '-x', 'DisplayName', 'RK2', 'LineWidth', 1.5);
+plot(ts_rk4, X_rk4, '-s', 'DisplayName', 'RK4', 'LineWidth', 1.5);
+
+% Add title and labels
+title('Comparison of Euler, RK2, and RK4 Methods');
+xlabel('Time');
+ylabel('x(t)');
+legend show;
+grid on;
+hold off;
+
+%% 2 b)
+% Compute the true values of the system at each time step
+function [X] = trueSolution(tf, dt, lambda, x0)
+    ts = tf(1):dt:tf(2);
+    X = zeros(1, length(ts));
+    for i = 1:length(ts)
+        X(i) = x0 * exp(lambda * ts(i));
+    end
+end
+
+true_vals = trueSolution([0 2], 0.1, -2, 1);
+
+% Compute and plot the error (true value - approximated value)
+error_euler = true_vals - X_euler;
+error_rk2 = true_vals - X_rk2;
+error_rk4 = true_vals - X_rk4;
+
+% Plot the error
+figure;
+plot(ts_euler, error_euler, '-o', 'DisplayName', 'Euler Error', 'LineWidth', 1.5);
+hold on;
+plot(ts_rk2, error_rk2, '-x', 'DisplayName', 'RK2 Error', 'LineWidth', 1.5);
+plot(ts_rk4, error_rk4, '-s', 'DisplayName', 'RK4 Error', 'LineWidth', 1.5);
+
+% Add title and labels for the error plot
+title('Error Comparison of Euler, RK2, and RK4 Methods');
+xlabel('Time');
+ylabel('True Value - Approximated Value');
+legend show;
+grid on;
+hold off;
+
+
+
+%% 2 c)
 
 
 
