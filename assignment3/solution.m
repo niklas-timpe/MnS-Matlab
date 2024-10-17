@@ -1,5 +1,5 @@
 %% 2 a
-clear all
+clear all;
 
 % Define symbolic variable
 syms x
