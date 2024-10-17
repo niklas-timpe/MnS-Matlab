@@ -97,7 +97,7 @@ function [X] = trueSolution(tf, dt, lambda, x0)
     end
 end
 
-true_vals = trueSolution([0 2], 0.1, -2, 1);
+true_vals = trueSolution([0 2], 0.1, lambda_value, 1);
 
 % Compute and plot the error (true value - approximated value)
 error_euler = true_vals - X_euler;
@@ -119,14 +119,22 @@ legend show;
 grid on;
 hold off;
 
+% Plot everything including true solution
+figure;
+plot(0:0.1:2, true_vals, 'k--', 'DisplayName', 'True Solution', 'LineWidth', 2.0);
+hold on;
+plot(ts_euler, X_euler, '-o', 'DisplayName', 'Euler', 'LineWidth', 1.5);
+plot(ts_rk2, X_rk2, '-x', 'DisplayName', 'RK2', 'LineWidth', 1.5);
+plot(ts_rk4, X_rk4, '-s', 'DisplayName', 'RK4', 'LineWidth', 1.5);
 
 
-%% 2 c)
-
-
-
-
-
+% Add title and labels
+title('Comparison of Euler, RK2, and RK4 Methods');
+xlabel('Time');
+ylabel('x(t)');
+legend show;
+grid on;
+hold off;
 
 
 %% 3 a
@@ -138,15 +146,15 @@ f = @(t, x) [
     x(2);                    % dx/dt = y
     (1 - x(1)^2) * x(2) - x(1)  % dy/dt = (1 - x^2)y - x
 ];
-init_conditions = [0; -1]
+init_conditions = [0; -1];
 tf = [0 25];
 options = odeset();
 
 [t_ode45,x_ode45] = ode45(f,tf,init_conditions,options);
 
 
-x_sol = x_ode45(:, 1)
-y_sol = x_ode45(:, 2)
+x_sol = x_ode45(:, 1);
+y_sol = x_ode45(:, 2);
 
 figure;
 plot(t_ode45, x_sol, '-o', 'LineWidth', 1); hold on;
@@ -181,14 +189,14 @@ function [t, X] = rk4(f, tspan, x0, dt)
 end
 
 
-init_conditions = [0; -1]
+init_conditions = [0; -1];
 tf = [0 25];
 
 [t_rk4,x_rk4] = rk4(f,tf,init_conditions,0.1);
 
 
-x_sol_rk4 = x_rk4(1, :)
-y_sol_rk4 = x_rk4(2, :)
+x_sol_rk4 = x_rk4(1, :);
+y_sol_rk4 = x_rk4(2, :);
 
 
 delta_t = diff(t_ode45) .* 20;
@@ -212,8 +220,8 @@ options = odeset('AbsTol',1e-8,'RelTol',1e-8);
 [t_ode45,x_ode45] = ode45(f,tf,init_conditions,options);
 
 
-x_sol = x_ode45(:, 1)
-y_sol = x_ode45(:, 2)
+x_sol = x_ode45(:, 1);
+y_sol = x_ode45(:, 2);
 
 figure;
 plot(t_ode45, x_sol, '.', 'Color', '#47FF83', 'LineWidth', 1); hold on;
