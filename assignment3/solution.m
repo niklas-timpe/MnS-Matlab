@@ -197,7 +197,7 @@ hold off;
 
 %% %% PART TWO
 %% 4 a)
-% Define symbolic variables and functions for IRK2
+% Define symbolic variables and functions for IRK4
 n = 1;
 s = 2;
 
@@ -211,12 +211,12 @@ f_sym = -2 * x_sym;
 % Generate InputFunction.m file
 matlabFunction(f_sym, 'file', 'InputFunction', 'vars', {t_sym, x_sym});
 
-% Define the Butcher Tableau for IRK2
-A_IRK2 = [1/4, 1/4 - sqrt(3)/6; 
+% Define the Butcher Tableau for IRK4
+A_IRK4 = [1/4, 1/4 - sqrt(3)/6; 
           1/4 + sqrt(3)/6, 1/4];
-c_IRK2 = [1/2 - sqrt(3)/6; 
+c_IRK4 = [1/2 - sqrt(3)/6; 
           1/2 + sqrt(3)/6];
-b_IRK2 = [1/2, 1/2];
+b_IRK4 = [1/2, 1/2];
 
 % Defining Residual Function
 K_mat_sym = sym('K', [n, s]);
@@ -224,7 +224,7 @@ r_mat_sym = sym('r', [n, s]);
 syms t dt real
 
 for i = 1:s
-    r_mat_sym(:, i) = InputFunction(t + c_IRK2(i) * dt, x_sym + dt * K_mat_sym * A_IRK2(i, :)') - K_mat_sym(:, i);
+    r_mat_sym(:, i) = InputFunction(t + c_IRK4(i) * dt, x_sym + dt * K_mat_sym * A_IRK4(i, :)') - K_mat_sym(:, i);
 end
 
 % Reshape K and r to vectors to enable computation of Jacobian
@@ -233,30 +233,30 @@ K_vec = reshape(K_mat_sym, [n * s, 1]);
 
 dr = jacobian(r_vec, K_vec);
 
-% Generate IRK2.m file
-matlabFunction(r_vec, dr, 'file', 'IRK2', 'vars', {t, x_sym, K_vec, dt});
+% Generate IRK4.m file
+matlabFunction(r_vec, dr, 'file', 'IRK4', 'vars', {t, x_sym, K_vec, dt});
 
 % Simulation parameters:
-tf_IRK2 = [0 1];
-dt_IRK2 = 0.1;
-x0_IRK2 = [1];
+tf_IRK4 = [0 1];
+dt_IRK4 = 0.1;
+x0_IRK4 = [1];
 
-% Simulate using IRK2
-Nsteps_IRK2 = (tf_IRK2(2) - tf_IRK2(1)) / dt_IRK2;
-t_IRK2 = tf_IRK2(1):dt_IRK2:tf_IRK2(2);
-x_IRK2 = zeros(n, length(t_IRK2));
-x_IRK2(:, 1) = x0_IRK2;
+% Simulate using IRK4
+Nsteps_IRK4 = (tf_IRK4(2) - tf_IRK4(1)) / dt_IRK4;
+t_IRK4 = tf_IRK4(1):dt_IRK4:tf_IRK4(2);
+x_IRK4 = zeros(n, length(t_IRK4));
+x_IRK4(:, 1) = x0_IRK4;
 
-% Loop for the IRK2
-for k = 1:Nsteps_IRK2
+% Loop for the IRK4
+for k = 1:Nsteps_IRK4
     % Newton iteration
     iter = true;
     niter = 0;
     % Initialize K_i = x_k
-    K_vec = repmat(x_IRK2(:, k), s, 1);
+    K_vec = repmat(x_IRK4(:, k), s, 1);
 
     while iter
-        [r_val, dr_val] = IRK2(t_IRK2(k), x_IRK2(:, k), K_vec, dt_IRK2);
+        [r_val, dr_val] = IRK4(t_IRK4(k), x_IRK4(:, k), K_vec, dt_IRK4);
         delta_K = dr_val \ r_val;
         K_vec = K_vec - delta_K;
 
@@ -268,15 +268,15 @@ for k = 1:Nsteps_IRK2
     end
     % Reshape K to matrix for update step
     K_mat = reshape(K_vec, [n, s]);
-    x_IRK2(:, k + 1) = x_IRK2(:, k) + dt_IRK2 * K_mat * b_IRK2';
+    x_IRK4(:, k + 1) = x_IRK4(:, k) + dt_IRK4 * K_mat * b_IRK4';
 end
 
 
 
 figure;
-plot(t_IRK2, x_IRK2, '-o', 'DisplayName', 'IRK2', 'LineWidth', 1.5);hold on;
+plot(t_IRK4, x_IRK4, '-o', 'DisplayName', 'IRK4', 'LineWidth', 1.5);hold on;
 plot(ts_rk4, X_rk4, '*','DisplayName', 'RK4', 'LineWidth', 1.5)
-title('IRK2 Method vs RK4 from 2 Solution');
+title('IRK4 Method vs RK4 from 2 Solution');
 xlabel('Time');
 ylabel('x(t)');
 legend show;
@@ -288,7 +288,7 @@ hold off;
 
 %% 4 c)
 % Create Input Function
-% Define symbolic variables and functions for IRK2
+% Define symbolic variables and functions for IRK4
 n = 2;
 s = 2;
 
@@ -303,12 +303,12 @@ vdp = [
 % Generate InputFunction.m file
 matlabFunction(vdp, 'file', 'VanDerPol', 'vars', {t_sym, x_sym});
 
-% Define the Butcher Tableau for IRK2
-A_IRK2 = [1/4, 1/4 - sqrt(3)/6; 
+% Define the Butcher Tableau for IRK4
+A_IRK4 = [1/4, 1/4 - sqrt(3)/6; 
           1/4 + sqrt(3)/6, 1/4];
-c_IRK2 = [1/2 - sqrt(3)/6; 
+c_IRK4 = [1/2 - sqrt(3)/6; 
           1/2 + sqrt(3)/6];
-b_IRK2 = [1/2, 1/2];
+b_IRK4 = [1/2, 1/2];
 
 % Defining Residual Function
 K_mat_sym = sym('K', [n, s]);
@@ -316,7 +316,7 @@ r_mat_sym = sym('r', [n, s]);
 syms t dt real
 
 for i = 1:s
-    r_mat_sym(:, i) = VanDerPol(t + c_IRK2(i) * dt, x_sym + dt * K_mat_sym * A_IRK2(i, :)') - K_mat_sym(:, i);
+    r_mat_sym(:, i) = VanDerPol(t + c_IRK4(i) * dt, x_sym + dt * K_mat_sym * A_IRK4(i, :)') - K_mat_sym(:, i);
 end
 
 % Reshape K and r to vectors to enable computation of Jacobian
@@ -325,30 +325,30 @@ K_vec = reshape(K_mat_sym, [n * s, 1]);
 
 dr = jacobian(r_vec, K_vec);
 
-% Generate IRK2.m file
-matlabFunction(r_vec, dr, 'file', 'IRK2', 'vars', {t, x_sym, K_vec, dt});
+% Generate IRK4.m file
+matlabFunction(r_vec, dr, 'file', 'IRK4', 'vars', {t, x_sym, K_vec, dt});
 
 % Simulation parameters:
-tf_IRK2 = [0 25];
-dt_IRK2 = 0.01;
-x0_IRK2 = [1;0];
+tf_IRK4 = [0 25];
+dt_IRK4 = 0.01;
+x0_IRK4 = [1;0];
 
-% Simulate using IRK2
-Nsteps_IRK2 = (tf_IRK2(2) - tf_IRK2(1)) / dt_IRK2;
-t_IRK2 = tf_IRK2(1):dt_IRK2:tf_IRK2(2);
-x_IRK2 = zeros(n, length(t_IRK2));
-x_IRK2(:, 1) = x0_IRK2;
+% Simulate using IRK4
+Nsteps_IRK4 = (tf_IRK4(2) - tf_IRK4(1)) / dt_IRK4;
+t_IRK4 = tf_IRK4(1):dt_IRK4:tf_IRK4(2);
+x_IRK4 = zeros(n, length(t_IRK4));
+x_IRK4(:, 1) = x0_IRK4;
 
-% Loop for the IRK2
-for k = 1:Nsteps_IRK2
+% Loop for the IRK4
+for k = 1:Nsteps_IRK4
     % Newton iteration
     iter = true;
     niter = 0;
     % Initialize K_i = x_k
-    K_vec = repmat(x_IRK2(:, k), s, 1);
+    K_vec = repmat(x_IRK4(:, k), s, 1);
 
     while iter
-        [r_val, dr_val] = IRK2(t_IRK2(k), x_IRK2(:, k), K_vec, dt_IRK2);
+        [r_val, dr_val] = IRK4(t_IRK4(k), x_IRK4(:, k), K_vec, dt_IRK4);
         delta_K = dr_val \ r_val;
         K_vec = K_vec - delta_K;
 
@@ -360,7 +360,7 @@ for k = 1:Nsteps_IRK2
     end
     % Reshape K to matrix for update step
     K_mat = reshape(K_vec, [n, s]);
-    x_IRK2(:, k + 1) = x_IRK2(:, k) + dt_IRK2 * K_mat * b_IRK2';
+    x_IRK4(:, k + 1) = x_IRK4(:, k) + dt_IRK4 * K_mat * b_IRK4';
 end
 
 
@@ -368,10 +368,10 @@ end
 figure;
 plot(ts_rk4_sys, x_sol_rk4, '-o', 'Color', '#FF1D8A', 'LineWidth', 1); hold on;
 plot(ts_rk4_sys, y_sol_rk4, '-o', 'Color', '#47FFBE', 'LineWidth', 1);
-plot(t_IRK2, x_IRK2(1,:), '-', 'Color', '#7E47FF', 'LineWidth', 1);
-plot(t_IRK2, x_IRK2(2,:), '-', 'Color', '#47C8FF', 'LineWidth', 1);
+plot(t_IRK4, x_IRK4(1,:), '-', 'Color', '#7E47FF', 'LineWidth', 1);
+plot(t_IRK4, x_IRK4(2,:), '-', 'Color', '#47C8FF', 'LineWidth', 1);
 legend('x_{RK4}(t)', 'y_{RK}(t)', 'x_{IK4}(t)', 'y_{IRK4}(t)', 'Location', 'best');
-title('IRK2 VDP vs Butcher');
+title('IRK4 VDP vs Butcher');
 xlabel('Time');
 ylabel('x(t)');
 legend show;
