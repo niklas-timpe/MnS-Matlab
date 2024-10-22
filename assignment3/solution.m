@@ -88,29 +88,42 @@ grid on;
 hold off;
 
 %% 2 b)
-% Compute the true values of the system at each time step
-true_vals = trueSolution(tf, dt, lambda_value, x0);
 
-% Compute and plot the error (true value - approximated value)
-error_euler = true_vals - X_euler;
-error_rk2 = true_vals - X_rk2;
-error_rk4 = true_vals - X_rk4;
+accuracy.euler = [];
+accuracy.rk2 = [];
+accuracy.rk4 =[];
+for counter = 0.001:0.001:1
+    delta_t = counter;
+    % Compute the true values of the system at each time step
+    true_vals = trueSolution(tf, delta_t, lambda_value, x0);
+    
 
+    [ts_euler_temp, X_euler_temp] = erkbutcher(tf, delta_t, dynamics, x0, Euler.A, Euler.B, Euler.C);
+    [ts_rk2_temp, X_rk2_temp] = erkbutcher(tf, delta_t, dynamics, x0, RK2.A, RK2.B, RK2.C);
+    [ts_rk4_temp, X_rk4_temp] = erkbutcher(tf, delta_t, dynamics, x0, RK4.A, RK4.B, RK4.C);
+    % Compute and plot the error (true value - approximated value)
+    accuracy.euler = [accuracy.euler; norm(true_vals - X_euler_temp)];
+    accuracy.rk2 = [accuracy.rk2;norm(true_vals - X_rk2_temp)];
+    accuracy.rk4 = [accuracy.rk4;norm(true_vals - X_rk4_temp)];
+end
 % Plot the error
 figure;
-plot(ts_euler, error_euler, '-o', 'DisplayName', 'Euler Error', 'LineWidth', 1.5);
+plot(0.001:0.001:1, accuracy.euler, '-', 'DisplayName', 'Euler', 'LineWidth', 1.5);
 hold on;
-plot(ts_rk2, error_rk2, '-x', 'DisplayName', 'RK2 Error', 'LineWidth', 1.5);
-plot(ts_rk4, error_rk4, '-s', 'DisplayName', 'RK4 Error', 'LineWidth', 1.5);
+plot(0.001:0.001:1, accuracy.rk2, '-', 'DisplayName', 'RK2', 'LineWidth', 1.5);
+plot(0.001:0.001:1, accuracy.rk4, '-', 'DisplayName', 'RK4', 'LineWidth', 1.5);
 
 % Add title and labels for the error plot
 title('Error Comparison of Euler, RK2, and RK4 Methods');
-xlabel('Time');
+xlabel('delta t');
 ylabel('True Value - Approximated Value');
 legend show;
 grid on;
 hold off;
 
+
+
+true_vals = trueSolution(tf, dt, lambda_value, x0);
 % Plot everything including true solution
 figure;
 plot(ts_euler, true_vals, 'k--', 'DisplayName', 'True Solution', 'LineWidth', 2.0);
