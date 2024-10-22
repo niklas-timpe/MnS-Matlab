@@ -114,9 +114,6 @@ hold on;
 loglog(delta_t_values, accuracy.rk2, '-', 'DisplayName', 'RK2', 'LineWidth', 1.5);
 loglog(delta_t_values, accuracy.rk4, '-', 'DisplayName', 'RK4', 'LineWidth', 1.5);
 
-% Reverse the direction of the x-axis
-set(gca, 'XDir', 'reverse');
-
 % Add title and labels for the error plot
 title('Error Comparison of Euler, RK2, and RK4 Methods (Log-Log Scale, Reversed X-Axis)');
 xlabel('delta t (log scale, reversed)');
@@ -394,8 +391,8 @@ end
 figure;
 plot(ts_rk4_sys, x_sol_rk4, '-o', 'Color', '#FF1D8A', 'LineWidth', 1); hold on;
 plot(ts_rk4_sys, y_sol_rk4, '-o', 'Color', '#47FFBE', 'LineWidth', 1);
-plot(t_IRK4, x_IRK4(1,:), '-', 'Color', '#7E47FF', 'LineWidth', 1);
-plot(t_IRK4, x_IRK4(2,:), '-', 'Color', '#47C8FF', 'LineWidth', 1);
+plot(t_IRK4, x_IRK4(1,:), '-*', 'Color', '#7E47FF', 'LineWidth', 1);
+plot(t_IRK4, x_IRK4(2,:), '-*', 'Color', '#47C8FF', 'LineWidth', 1);
 legend('x_{RK4}(t)', 'y_{RK}(t)', 'x_{IK4}(t)', 'y_{IRK4}(t)', 'Location', 'best');
 title('IRK4 VDP vs Butcher');
 xlabel('Time');
