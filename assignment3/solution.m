@@ -92,8 +92,8 @@ hold off;
 accuracy.euler = [];
 accuracy.rk2 = [];
 accuracy.rk4 =[];
-for counter = 0.001:0.001:1
-    delta_t = counter;
+delta_t_values = logspace(-4, 0, 1000); % This goes from 10^-3 to 10^0 (0.001 to 1)
+for delta_t = delta_t_values
     % Compute the true values of the system at each time step
     true_vals = trueSolution(tf, delta_t, lambda_value, x0);
     
@@ -106,22 +106,24 @@ for counter = 0.001:0.001:1
     accuracy.rk2 = [accuracy.rk2;norm(true_vals - X_rk2_temp)];
     accuracy.rk4 = [accuracy.rk4;norm(true_vals - X_rk4_temp)];
 end
-% Plot the error
+
+% Plot the error using a logarithmic scale on both axes
 figure;
-plot(0.001:0.001:1, accuracy.euler, '-', 'DisplayName', 'Euler', 'LineWidth', 1.5);
+loglog(delta_t_values, accuracy.euler, '-', 'DisplayName', 'Euler', 'LineWidth', 1.5);
 hold on;
-plot(0.001:0.001:1, accuracy.rk2, '-', 'DisplayName', 'RK2', 'LineWidth', 1.5);
-plot(0.001:0.001:1, accuracy.rk4, '-', 'DisplayName', 'RK4', 'LineWidth', 1.5);
+loglog(delta_t_values, accuracy.rk2, '-', 'DisplayName', 'RK2', 'LineWidth', 1.5);
+loglog(delta_t_values, accuracy.rk4, '-', 'DisplayName', 'RK4', 'LineWidth', 1.5);
+
+% Reverse the direction of the x-axis
+set(gca, 'XDir', 'reverse');
 
 % Add title and labels for the error plot
-title('Error Comparison of Euler, RK2, and RK4 Methods');
-xlabel('delta t');
-ylabel('True Value - Approximated Value');
+title('Error Comparison of Euler, RK2, and RK4 Methods (Log-Log Scale, Reversed X-Axis)');
+xlabel('delta t (log scale, reversed)');
+ylabel('Error (log scale)');
 legend show;
 grid on;
 hold off;
-
-
 
 true_vals = trueSolution(tf, dt, lambda_value, x0);
 % Plot everything including true solution
