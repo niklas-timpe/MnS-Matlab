@@ -155,19 +155,19 @@ hold off;
 
 %% 3 b)
 % Simulation parameters
-dt_sys = 0.01;
+dt_sys = 0.1;
 
 % Run simulations using erkbutcher for the system
-[ts_rk4_sys, X_rk4_sys] = erkbutcher(tf_sys, dt_sys, f_sys, init_conditions, RK4.A, RK4.B, RK4.C);
+[ts_rk4_sys_m1, X_rk4_sys_m1] = erkbutcher(tf_sys, dt_sys, f_sys, init_conditions, RK4.A, RK4.B, RK4.C);
 
-x_sol_rk4 = X_rk4_sys(1, :);
-y_sol_rk4 = X_rk4_sys(2, :);
+x_sol_rk4_m1 = X_rk4_sys_m1(1, :);
+y_sol_rk4_m1 = X_rk4_sys_m1(2, :);
 
 delta_t = diff(t_ode45) .* 20;
 
 figure;
-plot(ts_rk4_sys, x_sol_rk4, '-*', 'Color', '#FF1D8A', 'LineWidth', 1); hold on;
-plot(ts_rk4_sys, y_sol_rk4, '-', 'Color', '#47FFBE', 'LineWidth', 1);
+plot(ts_rk4_sys_m1, x_sol_rk4_m1, '-*', 'Color', '#FF1D8A', 'LineWidth', 1); hold on;
+plot(ts_rk4_sys_m1, y_sol_rk4_m1, '-', 'Color', '#47FFBE', 'LineWidth', 1);
 plot(t_ode45, x_sol, '-o', 'Color', '#7E47FF', 'LineWidth', 1);
 plot(t_ode45, y_sol, '-', 'Color', '#47C8FF', 'LineWidth', 1);
 plot(t_ode45(1:end-1), delta_t, 'k', 'LineWidth', 1);
@@ -178,6 +178,15 @@ legend('x_{RK4}(t)', 'y_{RK4}(t)', 'x_{ODE45}(t)', 'y_{ODE45}(t)', 'ODE45 dt * 2
 grid on;
 hold off;
 
+
+
+dt_sys = 0.01;
+
+[ts_rk4_sys, X_rk4_sys] = erkbutcher(tf_sys, dt_sys, f_sys, init_conditions, RK4.A, RK4.B, RK4.C);
+
+x_sol_rk4 = X_rk4_sys(1, :);
+y_sol_rk4 = X_rk4_sys(2, :);
+
 % ODE45 with tighter tolerances
 options_tight = odeset('AbsTol',1e-8,'RelTol',1e-8);
 [t_ode45_tight, x_ode45_tight] = ode45(f_sys, tf_sys, init_conditions, options_tight);
@@ -186,12 +195,14 @@ x_sol_tight = x_ode45_tight(:, 1);
 y_sol_tight = x_ode45_tight(:, 2);
 
 figure;
-plot(t_ode45_tight, x_sol_tight, '.', 'Color', '#47FF83', 'LineWidth', 1); hold on;
-plot(t_ode45_tight, y_sol_tight, '.', 'Color', '#015EFF', 'LineWidth', 1);
+plot(ts_rk4_sys, x_sol_rk4, '-o', 'Color', '#FF1D8A', 'LineWidth', 1); hold on;
+plot(ts_rk4_sys, y_sol_rk4, '-o', 'Color', '#47FFBE', 'LineWidth', 1);
+plot(t_ode45_tight, x_sol_tight, '-*', 'Color', '#47FF83', 'LineWidth', 1);
+plot(t_ode45_tight, y_sol_tight, '-*', 'Color', '#015EFF', 'LineWidth', 1);
 xlabel('Time t');
 ylabel('Solutions');
-title('ODE45 with Tight Tolerances');
-legend('x(t)', 'y(t)', 'Location', 'best');
+title('ODE45 with Tight Tolerances vs RK4 with 0.01 dt');
+legend('x_{RK4}(t)', 'y_{RK4}(t)', 'x_{ODE45}(t)', 'y_{ODE45}(t)', 'Location', 'best');
 grid on;
 hold off;
 
