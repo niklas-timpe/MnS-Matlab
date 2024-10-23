@@ -1,3 +1,5 @@
+close all
+clear all
 %% Function Definitions
 function [ts, X] = erkbutcher(tf, dt, f, init, A, B, C)
     ts = tf(1):dt:tf(2);
@@ -219,20 +221,7 @@ grid on;
 hold off;
 
 %% %% PART TWO
-%% 4 a)
-% Define symbolic variables and functions for IRK4
-n = 1;
-s = 2;
-
-% Create Input Function
-x_sym = sym('x', [n, 1]);
-syms t_sym
-
-% 4 b)
-f_sym = -2 * x_sym;
-
-% Generate InputFunction.m file
-matlabFunction(f_sym, 'file', 'InputFunction', 'vars', {t_sym, x_sym});
+%% 4 a) and b)
 
 % Define the Butcher Tableau for IRK4
 A_IRK4 = [1/4, 1/4 - sqrt(3)/6; 
@@ -241,71 +230,135 @@ c_IRK4 = [1/2 - sqrt(3)/6;
           1/2 + sqrt(3)/6];
 b_IRK4 = [1/2, 1/2];
 
-% Defining Residual Function
-K_mat_sym = sym('K', [n, s]);
-r_mat_sym = sym('r', [n, s]);
-syms t dt real
+lambdas = [-35, -30, -25, -5, -2];
+solrk4 = [];
+solirk4 = [];
+soltrue = [];
 
-for i = 1:s
-    r_mat_sym(:, i) = InputFunction(t + c_IRK4(i) * dt, x_sym + dt * K_mat_sym * A_IRK4(i, :)') - K_mat_sym(:, i);
-end
+for lambda_test = lambdas
+    % Define symbolic variables and functions for IRK4
+    n = 1;
+    s = 2;
 
-% Reshape K and r to vectors to enable computation of Jacobian
-r_vec = reshape(r_mat_sym, [n * s, 1]);
-K_vec = reshape(K_mat_sym, [n * s, 1]);
+    % Create Input Function
+    x_sym = sym('x', [n, 1]);
+    syms t_sym
 
-dr = jacobian(r_vec, K_vec);
+    % 4 b)
+    f_sym = lambda_test * x_sym;
+    % for rk4:
+    syms tx tt
+    f = lambda_test * tx;
+    dynamics = matlabFunction(f, 'Vars', [tt tx]);
 
-% Generate IRK4.m file
-matlabFunction(r_vec, dr, 'file', 'IRK4', 'vars', {t, x_sym, K_vec, dt});
 
-% Simulation parameters:
-tf_IRK4 = [0 1];
-dt_IRK4 = 0.1;
-x0_IRK4 = [1];
+    % Generate InputFunction.m file
+    matlabFunction(f_sym, 'file', 'InputFunction', 'vars', {t_sym, x_sym});
 
-% Simulate using IRK4
-Nsteps_IRK4 = (tf_IRK4(2) - tf_IRK4(1)) / dt_IRK4;
-t_IRK4 = tf_IRK4(1):dt_IRK4:tf_IRK4(2);
-x_IRK4 = zeros(n, length(t_IRK4));
-x_IRK4(:, 1) = x0_IRK4;
+    % Defining Residual Function
+    K_mat_sym = sym('K', [n, s]);
+    r_mat_sym = sym('r', [n, s]);
+    syms t dt real
 
-% Loop for the IRK4
-for k = 1:Nsteps_IRK4
-    % Newton iteration
-    iter = true;
-    niter = 0;
-    % Initialize K_i = x_k
-    K_vec = repmat(x_IRK4(:, k), s, 1);
-
-    while iter
-        [r_val, dr_val] = IRK4(t_IRK4(k), x_IRK4(:, k), K_vec, dt_IRK4);
-        delta_K = dr_val \ r_val;
-        K_vec = K_vec - delta_K;
-
-        if norm(r_val) < 1e-5 || niter > 100
-            iter = false;
-        else
-            niter = niter + 1;
-        end
+    for i = 1:s
+        r_mat_sym(:, i) = InputFunction(t + c_IRK4(i) * dt, x_sym + dt * K_mat_sym * A_IRK4(i, :)') - K_mat_sym(:, i);
     end
-    % Reshape K to matrix for update step
-    K_mat = reshape(K_vec, [n, s]);
-    x_IRK4(:, k + 1) = x_IRK4(:, k) + dt_IRK4 * K_mat * b_IRK4';
+
+    % Reshape K and r to vectors to enable computation of Jacobian
+    r_vec = reshape(r_mat_sym, [n * s, 1]);
+    K_vec = reshape(K_mat_sym, [n * s, 1]);
+
+    dr = jacobian(r_vec, K_vec);
+
+    % Generate IRK4.m file
+    matlabFunction(r_vec, dr, 'file', 'IRK4', 'vars', {t, x_sym, K_vec, dt});
+
+    % Simulation parameters:
+    tf_IRK4 = [0 1];
+    dt_IRK4 = 0.1;
+    x0_IRK4 = [1];
+
+    % Simulate using IRK4
+    Nsteps_IRK4 = (tf_IRK4(2) - tf_IRK4(1)) / dt_IRK4;
+    t_IRK4 = tf_IRK4(1):dt_IRK4:tf_IRK4(2);
+    x_IRK4 = zeros(n, length(t_IRK4));
+    x_IRK4(:, 1) = x0_IRK4;
+
+    % Loop for the IRK4
+    for k = 1:Nsteps_IRK4
+        % Newton iteration
+        iter = true;
+        niter = 0;
+        % Initialize K_i = x_k
+        K_vec = repmat(x_IRK4(:, k), s, 1);
+
+        while iter
+            [r_val, dr_val] = IRK4(t_IRK4(k), x_IRK4(:, k), K_vec, dt_IRK4);
+            delta_K = dr_val \ r_val;
+            K_vec = K_vec - delta_K;
+
+            if norm(r_val) < 1e-5 || niter > 100
+                iter = false;
+            else
+                niter = niter + 1;
+            end
+        end
+        % Reshape K to matrix for update step
+        K_mat = reshape(K_vec, [n, s]);
+        x_IRK4(:, k + 1) = x_IRK4(:, k) + dt_IRK4 * K_mat * b_IRK4';
+    end
+
+    % RK4 calc
+    [lambdaRK4_t, lambdaRK4_x] = erkbutcher(tf_IRK4, dt_IRK4, dynamics, 1, RK4.A, RK4.B, RK4.C);
+    
+    solrk4 = [solrk4; lambdaRK4_x];
+    solirk4 = [solirk4; x_IRK4];
+
+    lambda_true_sol = trueSolution(tf_IRK4, dt_IRK4, lambda_test, x0_IRK4);
+    soltrue = [soltrue; lambda_true_sol];
 end
-
-
-
+timeframe = 0:dt_IRK4:1;
 figure;
-plot(t_IRK4, x_IRK4, '-o', 'DisplayName', 'IRK4', 'LineWidth', 1.5);hold on;
-plot(ts_rk4, X_rk4, '*','DisplayName', 'RK4', 'LineWidth', 1.5)
-title('IRK4 Method vs RK4 from 2 Solution');
+hold on;
+num_colors = length(lambdas);
+for i = 1:length(lambdas)
+    % Calculate colors for each set of plots
+    red_color = 285 - i * 30;
+    green_color = 285 - i * 30;
+
+    % Ensure the color values are within the [0, 255] range for RGB
+    red_color = max(0, min(255, red_color));
+    green_color = max(0, min(255, green_color));
+    grey_value = (i - 1) / (num_colors - 1);  % This will vary from 0 (black) to 1 (light grey)
+    grey_color = grey_value * 0.8;  % Scale it to get lighter shades (0.8, 0.8, 0.8 is light grey)
+
+    % Create legend names using the lambda values
+    rk4_name = sprintf('RK4_{%.1f}', lambdas(i));
+    irk4_name = sprintf('IRK4_{%.1f}', lambdas(i));
+    true_name = sprintf('True_{%.1f}', lambdas(i));
+
+    % Plot 'solirk4' with red color and '-o' marker
+    plot(timeframe, solirk4(i,:), '-o', 'Color', [red_color/255, 0, 0], 'LineWidth', 1, 'DisplayName', irk4_name);
+
+    % Plot 'solrk4' with green color and '-*' marker
+    plot(timeframe, solrk4(i,:), '-*', 'Color', [0, green_color/255, 0], 'LineWidth', 1, 'DisplayName', rk4_name);
+
+    plot(timeframe, soltrue(i,:), '-','Color', [grey_color, grey_color, grey_color], 'LineWidth', 2, 'DisplayName', true_name);
+end
+set(gca, 'YScale', 'log')
+% Show legend with custom names
+%legend show;
+
+hold off; % Release the plot after the loop
+
+
+
+title('IRK4 (red) vs RK4 (green) with different lambdas. Low lambda equals lighter color.');
 xlabel('Time');
 ylabel('x(t)');
 legend show;
 grid on;
 hold off;
-
 
 
 
@@ -394,7 +447,7 @@ plot(ts_rk4_sys, y_sol_rk4, '-o', 'Color', '#47FFBE', 'LineWidth', 1);
 plot(t_IRK4, x_IRK4(1,:), '-*', 'Color', '#7E47FF', 'LineWidth', 1);
 plot(t_IRK4, x_IRK4(2,:), '-*', 'Color', '#47C8FF', 'LineWidth', 1);
 legend('x_{RK4}(t)', 'y_{RK}(t)', 'x_{IK4}(t)', 'y_{IRK4}(t)', 'Location', 'best');
-title('IRK4 VDP vs Butcher');
+title('IRK4 vs RK4 for VDP');
 xlabel('Time');
 ylabel('x(t)');
 legend show;
